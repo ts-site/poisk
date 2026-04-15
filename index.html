@@ -43,42 +43,44 @@ button{background:#007bff;color:#fff;border:none;}
 </div>
 
 <script>
+// обфускация пароля
 const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
-const _ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
+const ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
 
+// API (обфускация)
 const _b = [
-  'aHR0cHM6Ly8=',
-  'aW5mb2FwaTI0LnN0b3Jl',
-  'L2FwaS8=',
-  'eHhSOWQ3ZGJaS3RBaXRNNk8xalFZaWpWTnNLdEEzMi8=',
-  'c2VhcmNoLw=='
+'aHR0cHM6Ly8=',
+'aW5mb2FwaTI0LnN0b3Jl',
+'L2FwaS8=',
+'eHhSOWQ3ZGJaS3RBaXRNNk8xalFZaWpWTnNLdEEzMi8=',
+'c2VhcmNoLw=='
 ];
 
 function getApi(q){
-  return atob(_b[0]) + atob(_b[1]) + atob(_b[2]) + atob(_b[3]) + atob(_b[4]) + encodeURIComponent(q);
+return atob(_b[0])+atob(_b[1])+atob(_b[2])+atob(_b[3])+atob(_b[4])+encodeURIComponent(q);
 }
 
 function openAdmin(){document.getElementById("admin").classList.add("show");}
 function closeAdmin(){document.getElementById("admin").classList.remove("show");}
 
-let keys = {};
+let keys={};
 
 function createKey(){
-  const pass=document.getElementById("adminPass").value;
-  if(pass!==_ADMIN) return alert("неверный пароль");
+const pass=document.getElementById("adminPass").value;
+if(pass!==ADMIN) return alert("неверный пароль");
 
-  const key=document.getElementById("newKey").value;
-  const limit=Number(document.getElementById("limit").value);
+const key=document.getElementById("newKey").value;
+const limit=Number(document.getElementById("limit").value);
 
-  keys[key]={limit,used:0};
-  alert("создано");
+keys[key]={limit,used:0};
+alert("создано");
 }
 
 function checkKey(key){
-  if(!keys[key]) return {ok:false,msg:"нет ключа"};
-  if(keys[key].used>=keys[key].limit) return {ok:false,msg:"лимит"};
-  keys[key].used++;
-  return {ok:true};
+if(!keys[key]) return {ok:false,msg:"нет ключа"};
+if(keys[key].used>=keys[key].limit) return {ok:false,msg:"лимит"};
+keys[key].used++;
+return {ok:true};
 }
 
 function render(obj){
