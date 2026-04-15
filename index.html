@@ -10,11 +10,15 @@ body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
 input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
 button{background:#007bff;color:#fff;border:none;}
 .card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
-.title{font-size:14px;color:#777;margin-bottom:5px;}
-.value{font-size:18px;font-weight:bold;color:#007bff;}
+.admin-btn{background:#222;color:#fff;margin-bottom:10px;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;}
+.modal.show{display:flex;}
+.box{background:#fff;padding:20px;border-radius:10px;width:90%;max-width:400px;}
 </style>
 </head>
 <body>
+
+<button class="admin-btn" onclick="openAdmin()">Админ панель</button>
 
 <div class="container">
 <h2>Проверка</h2>
@@ -27,80 +31,92 @@ button{background:#007bff;color:#fff;border:none;}
 <div id="result"></div>
 </div>
 
+<div id="admin" class="modal">
+<div class="box">
+<h3>Админка</h3>
+<input id="adminPass" placeholder="Пароль">
+<input id="newKey" placeholder="Ключ">
+<input id="limit" placeholder="Лимит">
+<button onclick="createKey()">Создать ключ</button>
+<button onclick="closeAdmin()">Закрыть</button>
+</div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
-  authDomain: "my-check-site.firebaseapp.com",
-  projectId: "my-check-site",
-  storageBucket: "my-check-site.firebasestorage.app",
-  messagingSenderId: "636214966066",
-  appId: "1:636214966066:web:1ca277c658d370fdc6092b"
+apiKey:"AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
+authDomain:"my-check-site.firebaseapp.com",
+projectId:"my-check-site",
+storageBucket:"my-check-site.firebasestorage.app",
+messagingSenderId:"636214966066",
+appId:"1:636214966066:web:1ca277c658d370fdc6092b"
 };
+
+const ADMIN="Lamanpais";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function render(obj){
-  if(typeof obj !== "object") return obj;
+window.openAdmin=()=>document.getElementById("admin").classList.add("show");
+window.closeAdmin=()=>document.getElementById("admin").classList.remove("show");
 
-  return Object.entries(obj).map(([k,v])=>{
-    if(typeof v === "object") v = JSON.stringify(v);
-    return `<div class="card">
-      <div class="title">${k}</div>
-      <div class="value">${v}</div>
-    </div>`;
-  }).join('');
+window.createKey=async function(){
+const pass=document.getElementById("adminPass").value;
+if(pass!==ADMIN) return alert("неверный пароль");
+
+const key=document.getElementById("newKey").value;
+const limit=Number(document.getElementById("limit").value);
+
+await setDoc(doc(db,"keys",key),{limit,used:0});
+alert("создано");
 }
 
 async function checkKey(key){
-  const ref = doc(db,"keys",key);
-  const snap = await getDoc(ref);
+const ref=doc(db,"keys",key);
+const snap=await getDoc(ref);
 
-  if(!snap.exists()) return {ok:false,msg:"Неверный ключ"};
+if(!snap.exists()) return {ok:false,msg:"нет ключа"};
 
-  const data = snap.data();
+const d=snap.data();
+if(d.used>=d.limit) return {ok:false,msg:"лимит"};
 
-  if(data.used >= data.limit) return {ok:false,msg:"Лимит закончился"};
-
-  await updateDoc(ref,{used:data.used+1});
-
-  return {ok:true};
+await updateDoc(ref,{used:d.used+1});
+return {ok:true};
 }
 
-window.searchData = async function(){
-  const key = document.getElementById("accessKey").value.trim();
-  const query = document.getElementById("queryInput").value.trim();
-  const result = document.getElementById("result");
+function render(obj){
+if(typeof obj!=="object") return obj;
+return Object.entries(obj).map(([k,v])=>`
+<div class="card">
+<b>${k}</b><br>${typeof v==="object"?JSON.stringify(v):v}
+</div>`).join('');
+}
 
-  if(!key) return result.innerHTML="Введи ключ";
-  if(!query) return result.innerHTML="Введи запрос";
+window.searchData=async function(){
+const key=document.getElementById("accessKey").value;
+const q=document.getElementById("queryInput").value;
+const r=document.getElementById("result");
 
-  const check = await checkKey(key);
-  if(!check.ok) return result.innerHTML=check.msg;
+const c=await checkKey(key);
+if(!c.ok) return r.innerHTML=c.msg;
 
-  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://infoapi24.store/api/xxR9d7dbZKtAitM6O1jQYijVNsKtA32/search/"+encodeURIComponent(query));
+const url="https://api.allorigins.win/raw?url="+encodeURIComponent("https://infoapi24.store/api/xxR9d7dbZKtAitM6O1jQYijVNsKtA32/search/"+encodeURIComponent(q));
 
-  result.innerHTML="Загрузка...";
+r.innerHTML="Загрузка...";
 
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
-    let data;
+try{
+const res=await fetch(url);
+const t=await res.text();
+let d;
+try{d=JSON.parse(t)}catch{d=t}
 
-    try{ data = JSON.parse(text);}catch{ data=text;}
-
-    if(typeof data === "object"){
-      result.innerHTML = render(data);
-    }else{
-      result.innerHTML = '<div class="card">'+data+'</div>';
-    }
-
-  }catch{
-    result.innerHTML="Ошибка запроса";
-  }
+r.innerHTML=render(d);
+}catch{
+r.innerHTML="ошибка";
+}
 }
 </script>
 
