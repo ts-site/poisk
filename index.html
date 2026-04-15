@@ -5,106 +5,416 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Проверка</title>
 <style>
-body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
-.container{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:12px;}
-input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
-button{background:#007bff;color:#fff;border:none;}
-.card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
-.admin-btn{background:#222;color:#fff;margin-bottom:10px;}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;}
-.modal.show{display:flex;}
-.box{background:#fff;padding:20px;border-radius:10px;width:90%;max-width:400px;}
+*{box-sizing:border-box}
+:root{
+  --bg:#f3f4f6;
+  --panel:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --blue:#1780f2;
+  --blue-dark:#0f6ad0;
+  --dark:#1f1f22;
+  --card:#f8fafc;
+  --danger:#b42318;
+  --danger-bg:#fef3f2;
+  --danger-border:#fecdca;
+  --ok:#067647;
+  --ok-bg:#ecfdf3;
+  --ok-border:#abefc6;
+}
+body{
+  margin:0;
+  padding:16px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+.wrap{
+  max-width:460px;
+  margin:0 auto;
+}
+.admin-btn{
+  width:100%;
+  border:none;
+  border-radius:16px;
+  background:var(--dark);
+  color:#fff;
+  padding:16px 18px;
+  font-size:16px;
+  cursor:pointer;
+  margin-bottom:14px;
+}
+.container{
+  background:var(--panel);
+  border-radius:24px;
+  padding:22px 18px 18px;
+  box-shadow:0 8px 28px rgba(0,0,0,.06);
+}
+h2{
+  margin:4px 0 18px;
+  font-size:32px;
+  line-height:1.1;
+}
+input,button{
+  width:100%;
+  min-width:0;
+  font-size:16px;
+  border-radius:16px;
+}
+input{
+  padding:18px 16px;
+  border:2px solid #d9d9de;
+  background:#fff;
+  margin-top:12px;
+  outline:none;
+}
+input:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 4px rgba(23,128,242,.12);
+}
+.action-btn{
+  margin-top:14px;
+  padding:18px 16px;
+  border:none;
+  background:var(--blue);
+  color:#fff;
+  cursor:pointer;
+}
+.action-btn:hover{background:var(--blue-dark)}
+#result{
+  margin-top:16px;
+  width:100%;
+  overflow:hidden;
+}
+.status{
+  border-radius:16px;
+  padding:14px 15px;
+  border:1px solid var(--border);
+  background:#fff;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+.status.error{
+  color:var(--danger);
+  background:var(--danger-bg);
+  border-color:var(--danger-border);
+}
+.status.ok{
+  color:var(--ok);
+  background:var(--ok-bg);
+  border-color:var(--ok-border);
+}
+.status.loading{
+  color:var(--blue-dark);
+  background:#eff6ff;
+  border-color:#bfdbfe;
+}
+.result-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.result-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  width:100%;
+  overflow:hidden;
+}
+.result-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.field{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  margin-top:10px;
+  width:100%;
+  overflow:hidden;
+}
+.field:first-child{margin-top:0}
+.label{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+.value{
+  font-size:16px;
+  line-height:1.45;
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+.value.mono{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px;
+}
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#3730a3;
+  font-size:12px;
+  font-weight:700;
+}
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.45);
+  padding:16px;
+}
+.modal.show{display:flex}
+.box{
+  width:100%;
+  max-width:420px;
+  background:#fff;
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 18px 40px rgba(0,0,0,.16);
+}
+.box h3{
+  margin:0 0 8px;
+  font-size:24px;
+}
+.row{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+.row button{
+  margin:0;
+  padding:15px 12px;
+}
+.secondary-btn{
+  background:#eef0f3;
+  color:#111827;
+  border:none;
+  cursor:pointer;
+}
+.note{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.4;
+}
+@media (max-width:420px){
+  body{padding:12px}
+  .container{padding:18px 14px 14px}
+  h2{font-size:28px}
+  .row{flex-direction:column}
+}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <button class="admin-btn" onclick="openAdmin()">Админ панель</button>
 
-<button class="admin-btn" onclick="openAdmin()">Админ панель</button>
+  <div class="container">
+    <h2>Проверка</h2>
 
-<div class="container">
-<h2>Проверка</h2>
+    <input id="accessKey" placeholder="Ключ доступа">
+    <input id="queryInput" placeholder="Введите запрос">
 
-<input id="accessKey" placeholder="Ключ доступа">
-<input id="queryInput" placeholder="Введите запрос">
+    <button class="action-btn" onclick="searchData()">Проверить</button>
 
-<button onclick="searchData()">Проверить</button>
-
-<div id="result"></div>
+    <div id="result"></div>
+  </div>
 </div>
 
-<div id="admin" class="modal">
-<div class="box">
-<h3>Админка</h3>
-<input id="adminPass" placeholder="Пароль">
-<input id="newKey" placeholder="Ключ">
-<input id="limit" placeholder="Лимит">
-<button onclick="createKey()">Создать ключ</button>
-<button onclick="closeAdmin()">Закрыть</button>
-</div>
+<div id="admin" class="modal" onclick="backdropClose(event)">
+  <div class="box">
+    <h3>Админка</h3>
+    <input id="adminPass" placeholder="Пароль">
+    <input id="newKey" placeholder="Ключ">
+    <input id="limit" placeholder="Лимит">
+    <div class="row">
+      <button class="action-btn" onclick="createKey()">Создать ключ</button>
+      <button class="secondary-btn" onclick="closeAdmin()">Закрыть</button>
+    </div>
+    <div class="note">Ключи в этом HTML хранятся временно и сбросятся после перезагрузки страницы.</div>
+  </div>
 </div>
 
 <script>
-// пароль
 const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
 const ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
-
-// твой воркер
 const WORKER_URL = "https://hello-world-wispy-boat-0d7c.db6df6cf4f.workers.dev/";
 
-function openAdmin(){document.getElementById("admin").classList.add("show");}
-function closeAdmin(){document.getElementById("admin").classList.remove("show");}
+let keys = {};
 
-let keys={};
+function openAdmin(){ document.getElementById("admin").classList.add("show"); }
+function closeAdmin(){ document.getElementById("admin").classList.remove("show"); }
+function backdropClose(event){ if(event.target.id === "admin") closeAdmin(); }
+
+function escapeHtml(v){
+  return String(v)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
 
 function createKey(){
-const pass=document.getElementById("adminPass").value;
-if(pass!==ADMIN) return alert("неверный пароль");
+  const pass = document.getElementById("adminPass").value.trim();
+  if(pass !== ADMIN) return alert("неверный пароль");
 
-const key=document.getElementById("newKey").value;
-const limit=Number(document.getElementById("limit").value);
+  const key = document.getElementById("newKey").value.trim();
+  const limit = Number(document.getElementById("limit").value);
 
-keys[key]={limit,used:0};
-alert("создано");
+  if(!key) return alert("введите ключ");
+  if(!Number.isFinite(limit) || limit < 1) return alert("введите нормальный лимит");
+
+  keys[key] = {limit, used:0};
+  alert("создано");
 }
 
 function checkKey(key){
-if(!keys[key]) return {ok:false,msg:"нет ключа"};
-if(keys[key].used>=keys[key].limit) return {ok:false,msg:"лимит"};
-keys[key].used++;
-return {ok:true};
+  if(!keys[key]) return {ok:false, msg:"нет ключа"};
+  if(keys[key].used >= keys[key].limit) return {ok:false, msg:"лимит"};
+  keys[key].used++;
+  return {ok:true};
 }
 
-function render(obj){
-if(typeof obj!=="object") return obj;
-return Object.entries(obj).map(([k,v])=>`
-<div class="card">
-<b>${k}</b><br>${typeof v==="object"?JSON.stringify(v):v}
-</div>`).join('');
+function isPlainObject(v){
+  return v !== null && typeof v === "object" && !Array.isArray(v);
+}
+
+function prettyValue(v){
+  if (v === null || v === undefined) return '<div class="value">—</div>';
+
+  if (Array.isArray(v)) {
+    if (!v.length) return '<div class="value">[]</div>';
+    if (v.every(x => typeof x !== "object" || x === null)) {
+      return `<div class="value">${escapeHtml(v.join(", "))}</div>`;
+    }
+    return `<div class="value mono">${escapeHtml(JSON.stringify(v, null, 2))}</div>`;
+  }
+
+  if (typeof v === "object") {
+    return `<div class="value mono">${escapeHtml(JSON.stringify(v, null, 2))}</div>`;
+  }
+
+  const text = String(v).trim();
+  if (/^https?:\/\//i.test(text)) {
+    return `<div class="value"><a href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a></div>`;
+  }
+  return `<div class="value">${escapeHtml(text || "—")}</div>`;
+}
+
+function renderObjectCard(obj, index){
+  const fields = Object.entries(obj).map(([k,v]) => {
+    const label = k === "database"
+      ? `<span class="badge">${escapeHtml(String(v))}</span>`
+      : prettyValue(v);
+
+    return `
+      <div class="field">
+        <div class="label">${escapeHtml(k)}</div>
+        ${k === "database" ? `<div class="value">${label}</div>` : label}
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="result-card">
+      <div class="result-title">Запись ${index + 1}</div>
+      ${fields}
+    </div>
+  `;
+}
+
+function renderData(data){
+  if (data === null || data === undefined || data === "") {
+    return '<div class="status error">Пустой ответ</div>';
+  }
+
+  if (typeof data === "string") {
+    return `<div class="result-card"><div class="value mono">${escapeHtml(data)}</div></div>`;
+  }
+
+  if (Array.isArray(data)) {
+    if (!data.length) return '<div class="status error">Ничего не найдено</div>';
+
+    const cards = data.map((item, i) => {
+      if (isPlainObject(item)) return renderObjectCard(item, i);
+      return `
+        <div class="result-card">
+          <div class="result-title">Запись ${i + 1}</div>
+          ${prettyValue(item)}
+        </div>
+      `;
+    }).join("");
+
+    return `<div class="result-list">${cards}</div>`;
+  }
+
+  if (isPlainObject(data)) {
+    return `<div class="result-list">${renderObjectCard(data, 0)}</div>`;
+  }
+
+  return `<div class="result-card"><div class="value">${escapeHtml(String(data))}</div></div>`;
 }
 
 async function searchData(){
-const key=document.getElementById("accessKey").value;
-const q=document.getElementById("queryInput").value;
-const r=document.getElementById("result");
+  const key = document.getElementById("accessKey").value.trim();
+  const q = document.getElementById("queryInput").value.trim();
+  const r = document.getElementById("result");
 
-const c=checkKey(key);
-if(!c.ok) return r.innerHTML=c.msg;
+  if (!key) {
+    r.innerHTML = '<div class="status error">Введите ключ доступа</div>';
+    return;
+  }
 
-const url=WORKER_URL + "?q=" + encodeURIComponent(q);
+  if (!q) {
+    r.innerHTML = '<div class="status error">Введите запрос</div>';
+    return;
+  }
 
-r.innerHTML="Загрузка...";
+  const c = checkKey(key);
+  if (!c.ok) {
+    r.innerHTML = `<div class="status error">${escapeHtml(c.msg)}</div>`;
+    return;
+  }
 
-try{
-const res=await fetch(url);
-const t=await res.text();
-let d;
-try{d=JSON.parse(t)}catch{d=t}
+  const url = WORKER_URL + "?q=" + encodeURIComponent(q);
+  r.innerHTML = '<div class="status loading">Загрузка...</div>';
 
-r.innerHTML=render(d);
-}catch{
-r.innerHTML="ошибка";
-}
+  try{
+    const res = await fetch(url);
+    const text = await res.text();
+
+    if (!res.ok) {
+      r.innerHTML = `<div class="status error">Ошибка ${res.status}</div>`;
+      return;
+    }
+
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+
+    if (data && typeof data === "object" && data.error) {
+      r.innerHTML = `<div class="status error">${escapeHtml(data.error)}</div>`;
+      return;
+    }
+
+    r.innerHTML = renderData(data);
+  }catch{
+    r.innerHTML = '<div class="status error">Ошибка при запросе</div>';
+  }
 }
 </script>
-
 </body>
 </html>
