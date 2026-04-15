@@ -6,62 +6,88 @@
   <title>Проверка</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       margin: 0;
       padding: 0;
+      color: #333;
     }
+
     .container {
-      max-width: 500px;
-      margin: 60px auto;
+      max-width: 420px;
+      margin: 40px auto;
       background: #fff;
       padding: 25px;
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
+
     h1 {
       text-align: center;
       margin-bottom: 25px;
     }
+
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-weight: bold;
     }
+
     input {
       width: 100%;
       padding: 12px;
-      margin-bottom: 18px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      box-sizing: border-box;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
     }
+
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
-      background: #007bff;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #007bff, #0056b3);
       color: white;
       font-size: 16px;
       cursor: pointer;
     }
-    button:hover {
-      background: #0056b3;
+
+    button:active {
+      transform: scale(0.98);
     }
+
     .result {
       margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      word-break: break-word;
     }
+
+    .card {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .title {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
     .error {
       color: red;
+      text-align: center;
     }
+
     .loading {
+      text-align: center;
       color: #555;
     }
   </style>
@@ -70,15 +96,15 @@
   <div class="container">
     <h1>Проверка</h1>
 
-    <label for="fio">ФИО + ДР</label>
-    <input type="text" id="fio" placeholder="Например: Иванов Иван Иванович 01.01.1990" />
+    <label>ФИО + ДР</label>
+    <input type="text" id="fio" placeholder="Иванов Иван Иванович 01.01.1990" />
 
-    <label for="phone">Номер</label>
-    <input type="text" id="phone" placeholder="Например: 79991234567" />
+    <label>Номер</label>
+    <input type="text" id="phone" placeholder="79991234567" />
 
     <button onclick="searchData()">Проверить</button>
 
-    <div id="result" class="result">Здесь будет результат...</div>
+    <div id="result" class="result"></div>
   </div>
 
   <script>
@@ -91,7 +117,7 @@
       const resultBox = document.getElementById("result");
 
       if (!fio && !phone) {
-        resultBox.innerHTML = '<span class="error">Заполните хотя бы одно поле.</span>';
+        resultBox.innerHTML = '<div class="error">Заполните хотя бы одно поле</div>';
         return;
       }
 
@@ -101,25 +127,32 @@
       const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodedQuery}`;
       const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
-      resultBox.innerHTML = '<span class="loading">Загрузка...</span>';
+      resultBox.innerHTML = '<div class="loading">Загрузка...</div>';
 
       try {
-        const response = await fetch(url, { method: "GET" });
-
-        if (!response.ok) {
-          throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-
+        const response = await fetch(url);
         const text = await response.text();
+        let data;
 
         try {
-          const data = JSON.parse(text);
-          resultBox.textContent = JSON.stringify(data, null, 2);
+          data = JSON.parse(text);
         } catch {
-          resultBox.textContent = text;
+          throw new Error("Неверный ответ API");
         }
+
+        if (data.result) {
+          resultBox.innerHTML = `
+            <div class="card">
+              <div class="title">Результат</div>
+              <div class="value">${data.result}</div>
+            </div>
+          `;
+        } else {
+          resultBox.innerHTML = '<div class="error">Нет данных</div>';
+        }
+
       } catch (error) {
-        resultBox.innerHTML = `<span class="error">Ошибка запроса: ${error.message}</span>`;
+        resultBox.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
       }
     }
   </script>
