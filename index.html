@@ -9,17 +9,7 @@ body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
 .container{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:12px;}
 input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
 button{background:#007bff;color:#fff;border:none;}
-.card{margin-top:12px;padding:14px 16px;background:#ffffff;border-radius:12px;border:1px solid #e7eaf0;box-shadow:0 4px 14px rgba(0,0,0,.04);}
-.result-wrap{margin-top:16px;display:grid;gap:12px;}
-.result-item{padding:14px 16px;background:#fff;border:1px solid #e7eaf0;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);}
-.result-key{font-size:13px;color:#667085;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
-.result-value{font-size:15px;color:#101828;line-height:1.5;word-break:break-word;}
-.result-array{display:grid;gap:10px;}
-.result-object{display:grid;gap:10px;}
-.result-empty{padding:16px;border-radius:12px;background:#fff3cd;color:#7a5d00;border:1px solid #ffe69c;}
-.result-error{padding:16px;border-radius:12px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;}
-.result-loading{padding:16px;border-radius:12px;background:#eff8ff;color:#175cd3;border:1px solid #b2ddff;}
-pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5;}
+.card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
 .admin-btn{background:#222;color:#fff;margin-bottom:10px;}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;}
 .modal.show{display:flex;}
@@ -28,7 +18,7 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 </head>
 <body>
 
-<button type="button" class="admin-btn" onclick="openAdmin()">Админ панель</button>
+<button class="admin-btn" onclick="openAdmin()">Админ панель</button>
 
 <div class="container">
 <h2>Проверка</h2>
@@ -36,7 +26,7 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 <input id="accessKey" placeholder="Ключ доступа">
 <input id="queryInput" placeholder="Введите запрос">
 
-<button type="button" onclick="searchData()">Проверить</button>
+<button onclick="searchData()">Проверить</button>
 
 <div id="result"></div>
 </div>
@@ -47,132 +37,69 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 <input id="adminPass" placeholder="Пароль">
 <input id="newKey" placeholder="Ключ">
 <input id="limit" placeholder="Лимит">
-<button type="button" onclick="createKey()">Создать ключ</button>
-<button type="button" onclick="closeAdmin()">Закрыть</button>
+<button onclick="createKey()">Создать ключ</button>
+<button onclick="closeAdmin()">Закрыть</button>
 </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+<script>
+const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
+const _ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
 
-const firebaseConfig = {
-apiKey:"AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
-authDomain:"my-check-site.firebaseapp.com",
-projectId:"my-check-site",
-storageBucket:"my-check-site.firebasestorage.app",
-messagingSenderId:"636214966066",
-appId:"1:636214966066:web:1ca277c658d370fdc6092b"
-};
+const _b = [
+  'aHR0cHM6Ly8=',
+  'aW5mb2FwaTI0LnN0b3Jl',
+  'L2FwaS8=',
+  'eHhSOWQ3ZGJaS3RBaXRNNk8xalFZaWpWTnNLdEEzMi8=',
+  'c2VhcmNoLw=='
+];
 
-const ADMIN="Lamanpais";
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.openAdmin=()=>document.getElementById("admin").classList.add("show");
-window.closeAdmin=()=>document.getElementById("admin").classList.remove("show");
-document.getElementById("admin").addEventListener("click",(e)=>{ if(e.target.id === "admin") closeAdmin(); });
-
-window.createKey=async function(){
-const pass=document.getElementById("adminPass").value;
-if(pass!==ADMIN) return alert("неверный пароль");
-
-const key=document.getElementById("newKey").value;
-const limit=Number(document.getElementById("limit").value);
-
-await setDoc(doc(db,"keys",key),{limit,used:0});
-alert("создано");
+function getApi(q){
+  return atob(_b[0]) + atob(_b[1]) + atob(_b[2]) + atob(_b[3]) + atob(_b[4]) + encodeURIComponent(q);
 }
 
-async function checkKey(key){
-const ref=doc(db,"keys",key);
-const snap=await getDoc(ref);
+function openAdmin(){document.getElementById("admin").classList.add("show");}
+function closeAdmin(){document.getElementById("admin").classList.remove("show");}
 
-if(!snap.exists()) return {ok:false,msg:"нет ключа"};
+let keys = {};
 
-const d=snap.data();
-if(d.used>=d.limit) return {ok:false,msg:"лимит"};
+function createKey(){
+  const pass=document.getElementById("adminPass").value;
+  if(pass!==_ADMIN) return alert("неверный пароль");
 
-await updateDoc(ref,{used:d.used+1});
-return {ok:true};
+  const key=document.getElementById("newKey").value;
+  const limit=Number(document.getElementById("limit").value);
+
+  keys[key]={limit,used:0};
+  alert("создано");
 }
 
-function escapeHtml(value){
-return String(value)
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;")
-.replaceAll("'","&#039;");
+function checkKey(key){
+  if(!keys[key]) return {ok:false,msg:"нет ключа"};
+  if(keys[key].used>=keys[key].limit) return {ok:false,msg:"лимит"};
+  keys[key].used++;
+  return {ok:true};
 }
 
-function prettyValue(value, level = 0){
-if(value === null) return '<span class="result-value">null</span>';
-if(value === undefined) return '<span class="result-value">—</span>';
-
-if(Array.isArray(value)){
-if(!value.length) return '<div class="result-empty">Пустой список</div>';
-return `<div class="result-array">${value.map((item,index)=>`
-<div class="result-item">
-<div class="result-key">Элемент ${index + 1}</div>
-<div class="result-value">${prettyValue(item, level + 1)}</div>
-</div>`).join('')}</div>`;
+function render(obj){
+if(typeof obj!=="object") return obj;
+return Object.entries(obj).map(([k,v])=>`
+<div class="card">
+<b>${k}</b><br>${typeof v==="object"?JSON.stringify(v):v}
+</div>`).join('');
 }
 
-if(typeof value === 'object'){
-const entries = Object.entries(value);
-if(!entries.length) return '<div class="result-empty">Пустой объект</div>';
-
-if(level >= 2){
-return `<pre class="json-block">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
-}
-
-return `<div class="result-object">${entries.map(([key,val])=>`
-<div class="result-item">
-<div class="result-key">${escapeHtml(key)}</div>
-<div class="result-value">${prettyValue(val, level + 1)}</div>
-</div>`).join('')}</div>`;
-}
-
-if(typeof value === 'boolean'){
-return value ? 'Да' : 'Нет';
-}
-
-return escapeHtml(value);
-}
-
-function render(data){
-if(data === null || data === undefined || data === ''){
-return '<div class="result-empty">Нет данных</div>';
-}
-
-if(typeof data !== 'object'){
-return `<div class="result-item"><div class="result-value">${escapeHtml(data)}</div></div>`;
-}
-
-if(Array.isArray(data)){
-return `<div class="result-wrap">${prettyValue(data)}</div>`;
-}
-
-return `<div class="result-wrap">${Object.entries(data).map(([key,value])=>`
-<div class="result-item">
-<div class="result-key">${escapeHtml(key)}</div>
-<div class="result-value">${prettyValue(value)}</div>
-</div>`).join('')}</div>`;
-}
-
-window.searchData=async function(){
+async function searchData(){
 const key=document.getElementById("accessKey").value;
 const q=document.getElementById("queryInput").value;
 const r=document.getElementById("result");
 
-const c=await checkKey(key);
-if(!c.ok) return r.innerHTML=`<div class="result-error">${c.msg}</div>`;
+const c=checkKey(key);
+if(!c.ok) return r.innerHTML=c.msg;
 
-const url="https://api.allorigins.win/raw?url="+encodeURIComponent("https://infoapi24.store/api/xxR9d7dbZKtAitM6O1jQYijVNsKtA32/search/"+encodeURIComponent(q));
+const url=getApi(q);
 
-r.innerHTML=`<div class="result-loading">Загрузка данных...</div>`;
+r.innerHTML="Загрузка...";
 
 try{
 const res=await fetch(url);
@@ -182,7 +109,7 @@ try{d=JSON.parse(t)}catch{d=t}
 
 r.innerHTML=render(d);
 }catch{
-r.innerHTML=`<div class="result-error">Ошибка при запросе к API</div>`;
+r.innerHTML="ошибка";
 }
 }
 </script>
