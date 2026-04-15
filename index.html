@@ -5,39 +5,233 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Проверка</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px; }
-    .container { max-width:420px; margin:0 auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.08); }
-    h2 { margin-top:0; text-align:center; }
-    input, button { width:100%; box-sizing:border-box; padding:12px; margin-top:10px; border-radius:8px; font-size:16px; }
-    input { border:1px solid #ccc; }
-    button { border:none; background:#007bff; color:#fff; cursor:pointer; }
-    button:disabled { opacity:.7; cursor:default; }
-    .card { margin-top:15px; padding:15px; background:#f9f9f9; border-radius:10px; white-space:pre-wrap; word-break:break-word; }
-    .error { color:#c62828; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .topbar {
+      max-width: 420px;
+      margin: 0 auto 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .admin-btn {
+      border: none;
+      background: #222;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input {
+      border: 1px solid #ccc;
+    }
+    .main-btn {
+      margin-top: 14px;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    .main-btn:disabled {
+      opacity: .7;
+      cursor: default;
+    }
+    .card {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .error { color: #c62828; }
+    .ok { color: #166534; }
+    .muted { color: #666; font-size: 14px; }
+    .keys-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .key-item {
+      background: #f7f7f7;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .key-head {
+      font-weight: bold;
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+    .row > * {
+      flex: 1;
+    }
+    .small-btn {
+      border: none;
+      background: #dc2626;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: auto;
+      font-size: 14px;
+    }
+    .green-btn {
+      border: none;
+      background: #16a34a;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-box {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
+  <div class="topbar">
+    <button class="admin-btn" onclick="openAdmin()">Админ панель</button>
+  </div>
+
   <div class="container">
     <h2>Проверка</h2>
-    <input id="fio" placeholder="ФИО + ДР" />
-    <input id="phone" placeholder="Номер" />
-    <button id="btn" onclick="searchData()">Проверить</button>
+
+    <label>Ключ доступа</label>
+    <input id="accessKey" placeholder="Введи ключ" />
+
+    <label>ФИО + ДР</label>
+    <input id="fio" placeholder="Иванов Иван Иванович 01.01.1990" />
+
+    <label>Номер</label>
+    <input id="phone" placeholder="79991234567" />
+
+    <button id="btn" class="main-btn" onclick="searchData()">Проверить</button>
+
     <div id="result"></div>
+  </div>
+
+  <div id="adminModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-title">Админ панель</div>
+
+      <div id="adminLoginBlock">
+        <label>Пароль</label>
+        <input id="adminPassword" type="password" placeholder="Введи пароль" />
+        <button class="main-btn" onclick="loginAdmin()">Войти</button>
+      </div>
+
+      <div id="adminPanelBlock" style="display:none;">
+        <label>Новый ключ</label>
+        <input id="newKey" placeholder="Например: user123key" />
+
+        <label>Лимит запросов</label>
+        <input id="newKeyLimit" type="number" min="1" placeholder="Например: 50" />
+
+        <button class="green-btn" onclick="createKey()">Создать ключ</button>
+
+        <div class="card">
+          <div><b>Список ключей</b></div>
+          <div id="keysList" class="keys-list"></div>
+        </div>
+      </div>
+
+      <button class="main-btn" style="background:#555;" onclick="closeAdmin()">Закрыть</button>
+    </div>
   </div>
 
   <script>
     const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
     const baseUrl = "https://infoapi24.store";
+    const ADMIN_PASSWORD = "Lamanpais";
+    const STORAGE_KEY = "site_access_keys_v1";
+
+    function getKeys() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveKeys(keys) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+    }
+
+    function ensureDefaultData() {
+      const keys = getKeys();
+      if (!Array.isArray(keys)) saveKeys([]);
+    }
 
     function flattenValue(value) {
       if (value === null || value === undefined) return "";
-      if (Array.isArray(value)) {
-        return value.map(flattenValue).filter(Boolean).join("\n");
-      }
-      if (typeof value === "object") {
-        return Object.values(value).map(flattenValue).filter(Boolean).join("\n");
-      }
+      if (Array.isArray(value)) return value.map(flattenValue).filter(Boolean).join("\n");
+      if (typeof value === "object") return Object.values(value).map(flattenValue).filter(Boolean).join("\n");
       return String(value);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function renderData(data) {
@@ -64,20 +258,128 @@
       resultBox.innerHTML = `<div class="card">${escapeHtml(String(data))}</div>`;
     }
 
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function findKey(keyValue) {
+      const keys = getKeys();
+      return keys.find(k => k.key === keyValue);
+    }
+
+    function validateKey(keyValue) {
+      const key = findKey(keyValue);
+      if (!key) {
+        return { ok: false, message: "Неверный ключ" };
+      }
+      if (Number(key.used || 0) >= Number(key.limit || 0)) {
+        return { ok: false, message: "Лимит запросов по ключу закончился" };
+      }
+      return { ok: true, key };
+    }
+
+    function incrementKeyUsage(keyValue) {
+      const keys = getKeys();
+      const index = keys.findIndex(k => k.key === keyValue);
+      if (index === -1) return;
+      keys[index].used = Number(keys[index].used || 0) + 1;
+      saveKeys(keys);
+      renderKeys();
+    }
+
+    function openAdmin() {
+      document.getElementById("adminModal").classList.add("show");
+      document.getElementById("adminPassword").value = "";
+    }
+
+    function closeAdmin() {
+      document.getElementById("adminModal").classList.remove("show");
+    }
+
+    function loginAdmin() {
+      const pass = document.getElementById("adminPassword").value;
+      if (pass !== ADMIN_PASSWORD) {
+        alert("Неверный пароль");
+        return;
+      }
+      document.getElementById("adminLoginBlock").style.display = "none";
+      document.getElementById("adminPanelBlock").style.display = "block";
+      renderKeys();
+    }
+
+    function createKey() {
+      const newKeyInput = document.getElementById("newKey");
+      const newKeyLimitInput = document.getElementById("newKeyLimit");
+
+      const keyValue = newKeyInput.value.trim();
+      const limitValue = Number(newKeyLimitInput.value.trim());
+
+      if (!keyValue) {
+        alert("Введи ключ");
+        return;
+      }
+      if (!limitValue || limitValue < 1) {
+        alert("Введи лимит запросов");
+        return;
+      }
+
+      const keys = getKeys();
+      if (keys.some(k => k.key === keyValue)) {
+        alert("Такой ключ уже есть");
+        return;
+      }
+
+      keys.push({
+        key: keyValue,
+        limit: limitValue,
+        used: 0
+      });
+
+      saveKeys(keys);
+      newKeyInput.value = "";
+      newKeyLimitInput.value = "";
+      renderKeys();
+    }
+
+    function deleteKey(keyValue) {
+      const keys = getKeys().filter(k => k.key !== keyValue);
+      saveKeys(keys);
+      renderKeys();
+    }
+
+    function renderKeys() {
+      const keys = getKeys();
+      const list = document.getElementById("keysList");
+
+      if (!keys.length) {
+        list.innerHTML = '<div class="muted">Ключей пока нет</div>';
+        return;
+      }
+
+      list.innerHTML = keys.map(item => `
+        <div class="key-item">
+          <div class="key-head">${escapeHtml(item.key)}</div>
+          <div class="muted">Запросов: ${Number(item.used || 0)} / ${Number(item.limit || 0)}</div>
+          <div style="margin-top:8px;">
+            <button class="small-btn" onclick="deleteKey('${escapeHtml(item.key).replace(/&#039;/g, "\\'")}')">Удалить</button>
+          </div>
+        </div>
+      `).join("");
     }
 
     async function searchData() {
+      const accessKey = document.getElementById("accessKey").value.trim();
       const fio = document.getElementById("fio").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const resultBox = document.getElementById("result");
       const btn = document.getElementById("btn");
+
+      if (!accessKey) {
+        resultBox.innerHTML = '<div class="card error">Введи ключ доступа</div>';
+        return;
+      }
+
+      const check = validateKey(accessKey);
+      if (!check.ok) {
+        resultBox.innerHTML = `<div class="card error">${escapeHtml(check.message)}</div>`;
+        return;
+      }
 
       if (!fio && !phone) {
         resultBox.innerHTML = '<div class="card error">Заполни хотя бы одно поле</div>';
@@ -93,21 +395,17 @@
 
       try {
         const res = await fetch(url, { method: "GET" });
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const text = await res.text();
-
         let data;
         try {
           data = JSON.parse(text);
         } catch {
-          // если API вернул обычный текст, тоже покажем
           data = text;
         }
 
+        incrementKeyUsage(accessKey);
         renderData(data);
       } catch (e) {
         resultBox.innerHTML = `<div class="card error">Ошибка: ${escapeHtml(e.message || "не удалось загрузить данные")}</div>`;
@@ -115,6 +413,8 @@
         btn.disabled = false;
       }
     }
+
+    ensureDefaultData();
   </script>
 </body>
 </html>
