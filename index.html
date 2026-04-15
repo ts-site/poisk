@@ -1,67 +1,120 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Проверка</title>
-<style>
-body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
-.container{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:12px;}
-input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
-button{background:#007bff;color:#fff;border:none;}
-.card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Проверка</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px; }
+    .container { max-width:420px; margin:0 auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+    h2 { margin-top:0; text-align:center; }
+    input, button { width:100%; box-sizing:border-box; padding:12px; margin-top:10px; border-radius:8px; font-size:16px; }
+    input { border:1px solid #ccc; }
+    button { border:none; background:#007bff; color:#fff; cursor:pointer; }
+    button:disabled { opacity:.7; cursor:default; }
+    .card { margin-top:15px; padding:15px; background:#f9f9f9; border-radius:10px; white-space:pre-wrap; word-break:break-word; }
+    .error { color:#c62828; }
+  </style>
 </head>
 <body>
-<div class="container">
-<h2>Проверка</h2>
+  <div class="container">
+    <h2>Проверка</h2>
+    <input id="fio" placeholder="ФИО + ДР" />
+    <input id="phone" placeholder="Номер" />
+    <button id="btn" onclick="searchData()">Проверить</button>
+    <div id="result"></div>
+  </div>
 
-<input id="fio" placeholder="ФИО + ДР">
-<input id="phone" placeholder="Номер">
-<button onclick="searchData()">Проверить</button>
+  <script>
+    const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
+    const baseUrl = "https://infoapi24.store";
 
-<div id="result"></div>
-</div>
-
-<script>
-const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
-const baseUrl = "https://infoapi24.store";
-
-function fix(obj){
-  if(typeof obj === "object" && obj !== null){
-    return Object.values(obj).map(v => fix(v)).join(" ");
-  }
-  return obj;
-}
-
-async function searchData(){
-  const fio = document.getElementById("fio").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const resultBox = document.getElementById("result");
-
-  const query = `${fio} ${phone}`.trim();
-  const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodeURIComponent(query)}`;
-  const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-
-  resultBox.innerHTML = "Загрузка...";
-
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
-    const data = JSON.parse(text);
-
-    if(Array.isArray(data)){
-      resultBox.innerHTML = data.map(item=>`
-        <div class="card">${fix(item)}</div>
-      `).join('');
-    }else{
-      resultBox.innerHTML = `<div class="card">${fix(data)}</div>`;
+    function flattenValue(value) {
+      if (value === null || value === undefined) return "";
+      if (Array.isArray(value)) {
+        return value.map(flattenValue).filter(Boolean).join("\n");
+      }
+      if (typeof value === "object") {
+        return Object.values(value).map(flattenValue).filter(Boolean).join("\n");
+      }
+      return String(value);
     }
 
-  }catch(e){
-    resultBox.innerHTML = "Ошибка";
-  }
-}
-</script>
+    function renderData(data) {
+      const resultBox = document.getElementById("result");
+
+      if (Array.isArray(data)) {
+        if (!data.length) {
+          resultBox.innerHTML = '<div class="card">Нет данных</div>';
+          return;
+        }
+        resultBox.innerHTML = data.map(item => {
+          const text = flattenValue(item).trim();
+          return `<div class="card">${escapeHtml(text || "Нет данных")}</div>`;
+        }).join("");
+        return;
+      }
+
+      if (typeof data === "object" && data !== null) {
+        const text = flattenValue(data).trim();
+        resultBox.innerHTML = `<div class="card">${escapeHtml(text || "Нет данных")}</div>`;
+        return;
+      }
+
+      resultBox.innerHTML = `<div class="card">${escapeHtml(String(data))}</div>`;
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function searchData() {
+      const fio = document.getElementById("fio").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const resultBox = document.getElementById("result");
+      const btn = document.getElementById("btn");
+
+      if (!fio && !phone) {
+        resultBox.innerHTML = '<div class="card error">Заполни хотя бы одно поле</div>';
+        return;
+      }
+
+      const query = `${fio} ${phone}`.trim();
+      const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodeURIComponent(query)}`;
+      const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+      btn.disabled = true;
+      resultBox.innerHTML = '<div class="card">Загрузка...</div>';
+
+      try {
+        const res = await fetch(url, { method: "GET" });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const text = await res.text();
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          // если API вернул обычный текст, тоже покажем
+          data = text;
+        }
+
+        renderData(data);
+      } catch (e) {
+        resultBox.innerHTML = `<div class="card error">Ошибка: ${escapeHtml(e.message || "не удалось загрузить данные")}</div>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
