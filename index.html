@@ -2,14 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Проверка</title>
   <style>
     body {
       margin:0;
-      font-family:Arial;
       background:#0f172a;
       color:#fff;
+      font-family:Arial;
       display:flex;
       justify-content:center;
       align-items:center;
@@ -23,7 +22,7 @@
     }
     input,button {
       width:100%;
-      padding:10px;
+      padding:12px;
       margin:6px 0;
       border:none;
       border-radius:8px;
@@ -33,10 +32,14 @@
     .result {
       margin-top:10px;
       background:#020617;
-      padding:10px;
+      padding:12px;
       border-radius:8px;
       min-height:60px;
-      white-space:pre-wrap;
+    }
+    .phone {
+      font-size:20px;
+      color:#22c55e;
+      margin-top:10px;
     }
   </style>
 </head>
@@ -46,24 +49,21 @@
   <h2>Проверка</h2>
 
   <input id="query" placeholder="Иванов Иван Иванович 01.01.2000">
-  <button onclick="searchByName()">Поиск по ФИО</button>
-
-  <input id="phone" placeholder="79991234567">
-  <button onclick="searchByPhone()">Поиск по номеру</button>
+  <button onclick="search()">Начать проверку</button>
 
   <div class="result" id="res">Ожидание...</div>
 </div>
 
 <script>
 const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
-const BASE_URL = "";
+const BASE_URL = "https://infoapi24.store";
 
-async function searchByName(){
+async function search(){
   const q = document.getElementById("query").value.trim();
   const res = document.getElementById("res");
 
   if(!q){
-    res.textContent = "Введи ФИО + ДР";
+    res.textContent = "Введи данные";
     return;
   }
 
@@ -71,49 +71,27 @@ async function searchByName(){
   const birth = parts.pop();
   const fio = parts.join(" ");
 
-  res.textContent = "Проверка...";
+  res.textContent = "Поиск...";
 
   try{
     const url = `${BASE_URL}/api/${API_TOKEN}/phone_by_name/${encodeURIComponent(fio)}/${encodeURIComponent(birth)}`;
     const r = await fetch(url);
     const data = await r.json();
 
-    res.textContent = format(data);
+    if(data.result){
+      res.innerHTML = `
+        Найден номер:
+        <div class="phone">${data.result}</div>
+      `;
+    } else if(data.error){
+      res.textContent = "Ошибка: " + data.error;
+    } else {
+      res.textContent = JSON.stringify(data);
+    }
 
   }catch(e){
     res.textContent = "Ошибка: " + e.message;
   }
-}
-
-async function searchByPhone(){
-  const phone = document.getElementById("phone").value.trim();
-  const res = document.getElementById("res");
-
-  if(!phone){
-    res.textContent = "Введи номер";
-    return;
-  }
-
-  res.textContent = "Проверка...";
-
-  try{
-    // ЕСЛИ У ТЕБЯ ДРУГОЙ ЭНДПОИНТ — ЗАМЕНИ НИЖЕ
-    const url = `${BASE_URL}/api/${API_TOKEN}/info_by_phone/${encodeURIComponent(phone)}`;
-    const r = await fetch(url);
-    const data = await r.json();
-
-    res.textContent = format(data);
-
-  }catch(e){
-    res.textContent = "Ошибка: " + e.message;
-  }
-}
-
-function format(data){
-  if(Array.isArray(data)){
-    return data.join("\n");
-  }
-  return JSON.stringify(data,null,2);
 }
 </script>
 
