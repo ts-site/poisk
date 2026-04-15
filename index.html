@@ -19,8 +19,15 @@
       border-radius: 14px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
-    h1 { text-align: center; margin-bottom: 25px; }
-    label { display: block; margin-bottom: 8px; font-weight: bold; }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
     input {
       width: 100%;
       padding: 12px;
@@ -40,7 +47,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-    button:hover { background: #0056b3; }
+    button:hover {
+      background: #0056b3;
+    }
     .result {
       margin-top: 20px;
       padding: 15px;
@@ -49,19 +58,23 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .error { color: red; }
-    .loading { color: #555; }
+    .error {
+      color: red;
+    }
+    .loading {
+      color: #555;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Проверка</h1>
 
-    <label>ФИО + ДР</label>
-    <input type="text" id="fio" placeholder="Иванов Иван Иванович 01.01.1990" />
+    <label for="fio">ФИО + ДР</label>
+    <input type="text" id="fio" placeholder="Например: Иванов Иван Иванович 01.01.1990" />
 
-    <label>Номер</label>
-    <input type="text" id="phone" placeholder="79991234567" />
+    <label for="phone">Номер</label>
+    <input type="text" id="phone" placeholder="Например: 79991234567" />
 
     <button onclick="searchData()">Проверить</button>
 
@@ -70,6 +83,7 @@
 
   <script>
     const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
+    const baseUrl = "https://infoapi24.store";
 
     async function searchData() {
       const fio = document.getElementById("fio").value.trim();
@@ -84,17 +98,28 @@
       const query = `${fio} ${phone}`.trim();
       const encodedQuery = encodeURIComponent(query);
 
-      const baseUrl = "https://example.com";
-      const url = `${baseUrl}/api/${API_TOKEN}/search/${encodedQuery}`;
+      const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodedQuery}`;
+      const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
       resultBox.innerHTML = '<span class="loading">Загрузка...</span>';
 
       try {
-        const response = await fetch(url);
-        const data = await response.json();
-        resultBox.textContent = JSON.stringify(data, null, 2);
+        const response = await fetch(url, { method: "GET" });
+
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+
+        const text = await response.text();
+
+        try {
+          const data = JSON.parse(text);
+          resultBox.textContent = JSON.stringify(data, null, 2);
+        } catch {
+          resultBox.textContent = text;
+        }
       } catch (error) {
-        resultBox.innerHTML = `<span class="error">Ошибка: ${error.message}</span>`;
+        resultBox.innerHTML = `<span class="error">Ошибка запроса: ${error.message}</span>`;
       }
     }
   </script>
