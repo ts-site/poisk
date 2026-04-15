@@ -1,371 +1,108 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Проверка</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-      color: #222;
-    }
-    .topbar {
-      max-width: 420px;
-      margin: 0 auto 12px;
-      display: flex;
-      justify-content: flex-end;
-    }
-    .admin-btn {
-      border: none;
-      background: #222;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .container {
-      max-width: 420px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 14px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.08);
-    }
-    h2 {
-      margin: 0 0 16px;
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin: 12px 0 6px;
-      font-weight: bold;
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    input {
-      border: 1px solid #ccc;
-    }
-    .main-btn {
-      margin-top: 14px;
-      border: none;
-      background: #007bff;
-      color: #fff;
-      cursor: pointer;
-    }
-    .main-btn:disabled {
-      opacity: .7;
-      cursor: default;
-    }
-    .card {
-      margin-top: 15px;
-      padding: 15px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .error { color: #c62828; }
-    .muted { color: #666; font-size: 14px; }
-    .keys-list { margin-top: 12px; display: grid; gap: 8px; }
-    .key-item {
-      background: #f7f7f7;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 10px;
-    }
-    .key-head {
-      font-weight: bold;
-      word-break: break-all;
-      margin-bottom: 6px;
-    }
-    .small-btn {
-      border: none;
-      background: #dc2626;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      width: auto;
-      font-size: 14px;
-      margin-top: 8px;
-    }
-    .green-btn {
-      border: none;
-      background: #16a34a;
-      color: white;
-      padding: 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 12px;
-      width: 100%;
-    }
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 999;
-    }
-    .modal.show { display: flex; }
-    .modal-box {
-      width: 100%;
-      max-width: 420px;
-      background: #fff;
-      border-radius: 14px;
-      padding: 18px;
-    }
-    .modal-title {
-      font-size: 22px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проверка</title>
+<style>
+body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
+.container{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:12px;}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
+button{background:#007bff;color:#fff;border:none;}
+.card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
+.title{font-size:14px;color:#777;margin-bottom:5px;}
+.value{font-size:18px;font-weight:bold;color:#007bff;}
+</style>
 </head>
 <body>
-  <div class="topbar">
-    <button class="admin-btn" id="adminOpenBtn">Админ панель</button>
-  </div>
 
-  <div class="container">
-    <h2>Проверка</h2>
+<div class="container">
+<h2>Проверка</h2>
 
-    <label>Ключ доступа</label>
-    <input id="accessKey" placeholder="Введи ключ" />
+<input id="accessKey" placeholder="Ключ доступа">
+<input id="queryInput" placeholder="Введите запрос">
 
-    <label>Введите запрос</label>
-    <input id="queryInput" placeholder="Напиши запрос" />
+<button onclick="searchData()">Проверить</button>
 
-    <button id="btn" class="main-btn">Проверить</button>
+<div id="result"></div>
+</div>
 
-    <div id="result"></div>
-  </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
-  <div id="adminModal" class="modal">
-    <div class="modal-box">
-      <div class="modal-title">Админ панель</div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
+  authDomain: "my-check-site.firebaseapp.com",
+  projectId: "my-check-site",
+  storageBucket: "my-check-site.firebasestorage.app",
+  messagingSenderId: "636214966066",
+  appId: "1:636214966066:web:1ca277c658d370fdc6092b"
+};
 
-      <div id="adminLoginBlock">
-        <label>Пароль</label>
-        <input id="adminPassword" type="password" placeholder="Введи пароль" />
-        <button class="main-btn" id="adminLoginBtn">Войти</button>
-      </div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-      <div id="adminPanelBlock" style="display:none;">
-        <label>Новый ключ</label>
-        <input id="newKey" placeholder="Например: user123key" />
+function render(obj){
+  if(typeof obj !== "object") return obj;
 
-        <label>Лимит запросов</label>
-        <input id="newKeyLimit" type="number" min="1" placeholder="Например: 50" />
+  return Object.entries(obj).map(([k,v])=>{
+    if(typeof v === "object") v = JSON.stringify(v);
+    return `<div class="card">
+      <div class="title">${k}</div>
+      <div class="value">${v}</div>
+    </div>`;
+  }).join('');
+}
 
-        <button class="green-btn" id="createKeyBtn">Создать ключ</button>
+async function checkKey(key){
+  const ref = doc(db,"keys",key);
+  const snap = await getDoc(ref);
 
-        <div class="card">
-          <div><b>Список ключей</b></div>
-          <div id="keysList" class="keys-list"></div>
-        </div>
-      </div>
+  if(!snap.exists()) return {ok:false,msg:"Неверный ключ"};
 
-      <button class="main-btn" style="background:#555;" id="adminCloseBtn">Закрыть</button>
-    </div>
-  </div>
+  const data = snap.data();
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, setDoc, deleteDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+  if(data.used >= data.limit) return {ok:false,msg:"Лимит закончился"};
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
-      authDomain: "my-check-site.firebaseapp.com",
-      projectId: "my-check-site",
-      storageBucket: "my-check-site.firebasestorage.app",
-      messagingSenderId: "636214966066",
-      appId: "1:636214966066:web:1ca277c658d370fdc6092b"
-    };
+  await updateDoc(ref,{used:data.used+1});
 
-    const ADMIN_PASSWORD = "Lamanpais";
+  return {ok:true};
+}
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+window.searchData = async function(){
+  const key = document.getElementById("accessKey").value.trim();
+  const query = document.getElementById("queryInput").value.trim();
+  const result = document.getElementById("result");
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  if(!key) return result.innerHTML="Введи ключ";
+  if(!query) return result.innerHTML="Введи запрос";
+
+  const check = await checkKey(key);
+  if(!check.ok) return result.innerHTML=check.msg;
+
+  const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://infoapi24.store/api/xxR9d7dbZKtAitM6O1jQYijVNsKtA32/search/"+encodeURIComponent(query));
+
+  result.innerHTML="Загрузка...";
+
+  try{
+    const res = await fetch(url);
+    const text = await res.text();
+    let data;
+
+    try{ data = JSON.parse(text);}catch{ data=text;}
+
+    if(typeof data === "object"){
+      result.innerHTML = render(data);
+    }else{
+      result.innerHTML = '<div class="card">'+data+'</div>';
     }
 
-    async function checkKey(key) {
-      const ref = doc(db, "keys", key);
-      const snap = await getDoc(ref);
+  }catch{
+    result.innerHTML="Ошибка запроса";
+  }
+}
+</script>
 
-      if (!snap.exists()) {
-        return { ok: false, message: "Неверный ключ" };
-      }
-
-      const data = snap.data();
-
-      if (Number(data.used || 0) >= Number(data.limit || 0)) {
-        return { ok: false, message: "Лимит закончился" };
-      }
-
-      await updateDoc(ref, {
-        used: Number(data.used || 0) + 1
-      });
-
-      return { ok: true };
-    }
-
-    async function searchData() {
-      const key = document.getElementById("accessKey").value.trim();
-      const query = document.getElementById("queryInput").value.trim();
-      const result = document.getElementById("result");
-      const btn = document.getElementById("btn");
-
-      if (!key) {
-        result.innerHTML = '<div class="card error">Введи ключ</div>';
-        return;
-      }
-
-      if (!query) {
-        result.innerHTML = '<div class="card error">Введи запрос</div>';
-        return;
-      }
-
-      btn.disabled = true;
-      result.innerHTML = '<div class="card">Загрузка...</div>';
-
-      try {
-        const check = await checkKey(key);
-
-        if (!check.ok) {
-          result.innerHTML = '<div class="card error">' + escapeHtml(check.message) + '</div>';
-          return;
-        }
-
-        result.innerHTML = '<div class="card">Запрос принят: ' + escapeHtml(query) + '</div>';
-      } catch (e) {
-        result.innerHTML = '<div class="card error">Ошибка: ' + escapeHtml(e.message || "не удалось выполнить запрос") + '</div>';
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    function openAdmin() {
-      document.getElementById("adminModal").classList.add("show");
-      document.getElementById("adminPassword").value = "";
-      document.getElementById("adminLoginBlock").style.display = "block";
-      document.getElementById("adminPanelBlock").style.display = "none";
-    }
-
-    function closeAdmin() {
-      document.getElementById("adminModal").classList.remove("show");
-    }
-
-    async function loginAdmin() {
-      const password = document.getElementById("adminPassword").value;
-      if (password !== ADMIN_PASSWORD) {
-        alert("Неверный пароль");
-        return;
-      }
-
-      document.getElementById("adminLoginBlock").style.display = "none";
-      document.getElementById("adminPanelBlock").style.display = "block";
-      await loadKeys();
-    }
-
-    async function createKey() {
-      const password = document.getElementById("adminPassword").value;
-      const key = document.getElementById("newKey").value.trim();
-      const limit = Number(document.getElementById("newKeyLimit").value);
-
-      if (password !== ADMIN_PASSWORD) return alert("Неверный пароль");
-      if (!key) return alert("Введи ключ");
-      if (!limit || limit < 1) return alert("Введи лимит");
-
-      const ref = doc(db, "keys", key);
-      const existing = await getDoc(ref);
-
-      if (existing.exists()) {
-        alert("Такой ключ уже есть");
-        return;
-      }
-
-      await setDoc(ref, {
-        limit,
-        used: 0
-      });
-
-      document.getElementById("newKey").value = "";
-      document.getElementById("newKeyLimit").value = "";
-      await loadKeys();
-      alert("Ключ создан");
-    }
-
-    async function deleteKey(key) {
-      const password = document.getElementById("adminPassword").value;
-      if (password !== ADMIN_PASSWORD) {
-        alert("Неверный пароль");
-        return;
-      }
-
-      await deleteDoc(doc(db, "keys", key));
-      await loadKeys();
-    }
-
-    async function loadKeys() {
-      const snap = await getDocs(collection(db, "keys"));
-      const list = document.getElementById("keysList");
-      const items = [];
-
-      snap.forEach((docSnap) => {
-        const data = docSnap.data();
-        items.push({
-          key: docSnap.id,
-          limit: data.limit || 0,
-          used: data.used || 0
-        });
-      });
-
-      if (!items.length) {
-        list.innerHTML = '<div class="muted">Ключей пока нет</div>';
-        return;
-      }
-
-      list.innerHTML = items.map(item => `
-        <div class="key-item">
-          <div class="key-head">${escapeHtml(item.key)}</div>
-          <div class="muted">Запросов: ${Number(item.used)} / ${Number(item.limit)}</div>
-          <button class="small-btn" data-key="${encodeURIComponent(item.key)}">Удалить</button>
-        </div>
-      `).join("");
-
-      list.querySelectorAll(".small-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const key = decodeURIComponent(btn.dataset.key);
-          await deleteKey(key);
-        });
-      });
-    }
-
-    document.getElementById("btn").addEventListener("click", searchData);
-    document.getElementById("adminOpenBtn").addEventListener("click", openAdmin);
-    document.getElementById("adminCloseBtn").addEventListener("click", closeAdmin);
-    document.getElementById("adminLoginBtn").addEventListener("click", loginAdmin);
-    document.getElementById("createKeyBtn").addEventListener("click", createKey);
-  </script>
 </body>
 </html>
