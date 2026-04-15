@@ -28,7 +28,7 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 </head>
 <body>
 
-<button class="admin-btn" onclick="openAdmin()">Админ панель</button>
+<button type="button" class="admin-btn" onclick="openAdmin()">Админ панель</button>
 
 <div class="container">
 <h2>Проверка</h2>
@@ -36,7 +36,7 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 <input id="accessKey" placeholder="Ключ доступа">
 <input id="queryInput" placeholder="Введите запрос">
 
-<button onclick="searchData()">Проверить</button>
+<button type="button" onclick="searchData()">Проверить</button>
 
 <div id="result"></div>
 </div>
@@ -47,8 +47,8 @@ pre.json-block{margin:0;padding:12px 14px;background:#0b1020;color:#d7e3ff;borde
 <input id="adminPass" placeholder="Пароль">
 <input id="newKey" placeholder="Ключ">
 <input id="limit" placeholder="Лимит">
-<button onclick="createKey()">Создать ключ</button>
-<button onclick="closeAdmin()">Закрыть</button>
+<button type="button" onclick="createKey()">Создать ключ</button>
+<button type="button" onclick="closeAdmin()">Закрыть</button>
 </div>
 </div>
 
@@ -72,6 +72,7 @@ const db = getFirestore(app);
 
 window.openAdmin=()=>document.getElementById("admin").classList.add("show");
 window.closeAdmin=()=>document.getElementById("admin").classList.remove("show");
+document.getElementById("admin").addEventListener("click",(e)=>{ if(e.target.id === "admin") closeAdmin(); });
 
 window.createKey=async function(){
 const pass=document.getElementById("adminPass").value;
@@ -171,7 +172,7 @@ if(!c.ok) return r.innerHTML=`<div class="result-error">${c.msg}</div>`;
 
 const url="https://api.allorigins.win/raw?url="+encodeURIComponent("https://infoapi24.store/api/xxR9d7dbZKtAitM6O1jQYijVNsKtA32/search/"+encodeURIComponent(q));
 
-r.innerHTML="<div class="result-loading">Загрузка данных...</div>";
+r.innerHTML=`<div class="result-loading">Загрузка данных...</div>`;
 
 try{
 const res=await fetch(url);
@@ -181,7 +182,7 @@ try{d=JSON.parse(t)}catch{d=t}
 
 r.innerHTML=render(d);
 }catch{
-r.innerHTML="<div class="result-error">Ошибка при запросе к API</div>";
+r.innerHTML=`<div class="result-error">Ошибка при запросе к API</div>`;
 }
 }
 </script>
