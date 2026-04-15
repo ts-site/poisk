@@ -1,160 +1,67 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Проверка</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    .result {
-      margin-top: 20px;
-    }
-
-    .card {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 14px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-
-    .title {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 10px;
-    }
-
-    .value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #007bff;
-    }
-
-    .error {
-      color: red;
-      text-align: center;
-    }
-
-    .loading {
-      text-align: center;
-      color: #555;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проверка</title>
+<style>
+body{font-family:Arial;background:#f4f4f4;margin:0;padding:20px;}
+.container{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:12px;}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;}
+button{background:#007bff;color:#fff;border:none;}
+.card{margin-top:15px;padding:15px;background:#f9f9f9;border-radius:10px;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Проверка</h1>
+<div class="container">
+<h2>Проверка</h2>
 
-    <label>ФИО + ДР</label>
-    <input type="text" id="fio" placeholder="Иванов Иван Иванович 01.01.1990" />
+<input id="fio" placeholder="ФИО + ДР">
+<input id="phone" placeholder="Номер">
+<button onclick="searchData()">Проверить</button>
 
-    <label>Номер</label>
-    <input type="text" id="phone" placeholder="79991234567" />
+<div id="result"></div>
+</div>
 
-    <button onclick="searchData()">Проверить</button>
+<script>
+const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
+const baseUrl = "https://infoapi24.store";
 
-    <div id="result" class="result"></div>
-  </div>
+function fix(obj){
+  if(typeof obj === "object" && obj !== null){
+    return Object.values(obj).map(v => fix(v)).join(" ");
+  }
+  return obj;
+}
 
-  <script>
-    const API_TOKEN = "xxR9d7dbZKtAitM6O1jQYijVNsKtA32";
-    const baseUrl = "https://infoapi24.store";
+async function searchData(){
+  const fio = document.getElementById("fio").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const resultBox = document.getElementById("result");
 
-    async function searchData() {
-      const fio = document.getElementById("fio").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const resultBox = document.getElementById("result");
+  const query = `${fio} ${phone}`.trim();
+  const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodeURIComponent(query)}`;
+  const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
-      if (!fio && !phone) {
-        resultBox.innerHTML = '<div class="error">Заполните хотя бы одно поле</div>';
-        return;
-      }
+  resultBox.innerHTML = "Загрузка...";
 
-      const query = `${fio} ${phone}`.trim();
-      const encodedQuery = encodeURIComponent(query);
+  try{
+    const res = await fetch(url);
+    const text = await res.text();
+    const data = JSON.parse(text);
 
-      const targetUrl = `${baseUrl}/api/${API_TOKEN}/search/${encodedQuery}`;
-      const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-
-      resultBox.innerHTML = '<div class="loading">Загрузка...</div>';
-
-      try {
-        const response = await fetch(url);
-        const text = await response.text();
-        let data;
-
-        try {
-          data = JSON.parse(text);
-        } catch {
-          throw new Error("Неверный ответ API");
-        }
-
-        if (data.result) {
-          resultBox.innerHTML = `
-            <div class="card">
-              <div class="title">Результат</div>
-              <div class="value">${data.result}</div>
-            </div>
-          `;
-        } else {
-          resultBox.innerHTML = '<div class="error">Нет данных</div>';
-        }
-
-      } catch (error) {
-        resultBox.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
-      }
+    if(Array.isArray(data)){
+      resultBox.innerHTML = data.map(item=>`
+        <div class="card">${fix(item)}</div>
+      `).join('');
+    }else{
+      resultBox.innerHTML = `<div class="card">${fix(data)}</div>`;
     }
-  </script>
+
+  }catch(e){
+    resultBox.innerHTML = "Ошибка";
+  }
+}
+</script>
 </body>
 </html>
