@@ -43,22 +43,12 @@ button{background:#007bff;color:#fff;border:none;}
 </div>
 
 <script>
-// обфускация пароля
+// пароль
 const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
 const ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
 
-// API (обфускация)
-const _b = [
-'aHR0cHM6Ly8=',
-'aW5mb2FwaTI0LnN0b3Jl',
-'L2FwaS8=',
-'eHhSOWQ3ZGJaS3RBaXRNNk8xalFZaWpWTnNLdEEzMi8=',
-'c2VhcmNoLw=='
-];
-
-function getApi(q){
-return atob(_b[0])+atob(_b[1])+atob(_b[2])+atob(_b[3])+atob(_b[4])+encodeURIComponent(q);
-}
+// твой воркер
+const WORKER_URL = "https://hello-world-wispy-boat-0d7c.db6df6cf4f.workers.dev/";
 
 function openAdmin(){document.getElementById("admin").classList.add("show");}
 function closeAdmin(){document.getElementById("admin").classList.remove("show");}
@@ -99,7 +89,7 @@ const r=document.getElementById("result");
 const c=checkKey(key);
 if(!c.ok) return r.innerHTML=c.msg;
 
-const url=getApi(q);
+const url=WORKER_URL + "?q=" + encodeURIComponent(q);
 
 r.innerHTML="Загрузка...";
 
