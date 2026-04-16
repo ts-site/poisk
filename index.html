@@ -53,7 +53,7 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(23,128,242,.12)}
   <div class="container">
     <h2>Проверка</h2>
     <input id="accessKey" placeholder="Ключ доступа">
-    <input id="queryInput" placeholder="Введите номер или запрос">
+    <input id="queryInput" placeholder="Введите номер, ФИО, email или номер машины">
     <button class="action-btn" onclick="searchData()">Проверить</button>
     <div id="result"></div>
   </div>
@@ -92,7 +92,7 @@ const db = getFirestore(app);
 
 const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
 const ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
-const WORKER_URL = "https://floral-sun-7131lamana.db6df6cf4f.workers.dev/";
+const WORKER_URL = "https://summer-hall-c4a1pappa.db6df6cf4f.workers.dev/";
 
 window.openAdmin = function(){ document.getElementById("admin").classList.add("show"); loadKeys(); };
 window.closeAdmin = function(){ document.getElementById("admin").classList.remove("show"); };
@@ -171,7 +171,7 @@ function buildTopCard(data){
   const operator = phoneInfo.operator || pick(first || {}, ["operator"]);
   let chips = "";
   [phone, email, born, operator].filter(Boolean).forEach(v => { chips += `<span class="chip">${escapeHtml(v)}</span>`; });
-  return `<div class="top-card"><div class="top-name">${escapeHtml(name)}</div><div class="top-sub">${escapeHtml(city || "Результаты по номеру")}</div><div class="chips">${chips}</div></div>`;
+  return `<div class="top-card"><div class="top-name">${escapeHtml(name)}</div><div class="top-sub">${escapeHtml(city || "Результаты поиска")}</div><div class="chips">${chips}</div></div>`;
 }
 
 function renderObjectCard(obj, index){
