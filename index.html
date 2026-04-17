@@ -41,9 +41,6 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(23,128,242,.12)}
 .row{display:flex;gap:10px;margin-top:14px}
 .secondary-btn{background:#eef0f3;color:#111827;border:none;cursor:pointer}
 .note{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4}
-.small-list{margin-top:12px;max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
-.small-item{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
-.small-item:last-child{border-bottom:none}
 @media (max-width:420px){body{padding:12px}.container{padding:18px 14px 14px}h2{font-size:28px}.row{flex-direction:column}}
 </style>
 </head>
@@ -69,14 +66,13 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(23,128,242,.12)}
       <button class="action-btn" onclick="createKey()">Создать ключ</button>
       <button class="secondary-btn" onclick="closeAdmin()">Закрыть</button>
     </div>
-    <div class="note">Ключи сохраняются в Firebase.</div>
-    <div class="small-list" style="display:none"></div>
+    <div class="note">Ключи сохраняются в Firebase. Список ключей скрыт.</div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, limit as fsLimit } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyAElkqoZjawZLjRkycz4cdXnJvkwUTpRgs",
@@ -92,9 +88,9 @@ const db = getFirestore(app);
 
 const _a = ['TGE=', 'bWFu', 'cGFpcw=='];
 const ADMIN = atob(_a[0]) + atob(_a[1]) + atob(_a[2]);
-const WORKER_URL = "https://summer-hall-c4a1pappa.db6df6cf4f.workers.dev/";
+const WORKER_URL = "https://bitter-leaf-404epapapapalsla.db6df6cf4f.workers.dev/";
 
-window.openAdmin = function(){ document.getElementById("admin").classList.add("show"); loadKeys(); };
+window.openAdmin = function(){ document.getElementById("admin").classList.add("show"); };
 window.closeAdmin = function(){ document.getElementById("admin").classList.remove("show"); };
 window.backdropClose = function(event){ if(event.target.id === "admin") closeAdmin(); };
 
@@ -113,25 +109,7 @@ window.createKey = async function(){
   alert("ключ создан");
   document.getElementById("newKey").value = "";
   document.getElementById("limit").value = "";
-  loadKeys();
 };
-
-async function loadKeys(){
-  const box = document.getElementById("keyList");
-  box.innerHTML = '<div class="small-item">Загрузка ключей...</div>';
-  try{
-    const snap = await getDocs(query(collection(db, "keys"), fsLimit(20)));
-    if(snap.empty){ box.innerHTML = '<div class="small-item">Ключей пока нет</div>'; return; }
-    let out = "";
-    snap.forEach(docSnap => {
-      const d = docSnap.data() || {};
-      out += `<div class="small-item"><b>${escapeHtml(docSnap.id)}</b><br>лимит: ${escapeHtml(d.limit ?? 0)} / использовано: ${escapeHtml(d.used ?? 0)}</div>`;
-    });
-    box.innerHTML = out;
-  }catch(e){
-    box.innerHTML = '<div class="small-item">Не удалось загрузить ключи</div>';
-  }
-}
 
 async function checkKey(key){
   const ref = doc(db, "keys", key);
@@ -146,7 +124,7 @@ async function checkKey(key){
 }
 
 function prettyLabel(key){
-  const map = {fio:"ФИО",full_name:"ФИО",name:"Имя",surname:"Фамилия",patronymic:"Отчество",phone:"Телефон",phone2:"Телефон 2",phone3:"Телефон 3",email:"Почта",address:"Адрес",city:"Город",region:"Регион",operator:"Оператор",birth_date:"Дата рождения",birthday:"Дата рождения",dob:"Дата рождения",bdate:"Дата рождения",bday:"Дата рождения",inn:"ИНН",snils:"СНИЛС",passport:"Паспорт",data:"База",database:"База",comments:"Комментарий"};
+  const map = {fio:"ФИО",full_name:"ФИО",name:"Имя",surname:"Фамилия",patronymic:"Отчество",phone:"Телефон",phone2:"Телефон 2",phone3:"Телефон 3",email:"Почта",address:"Адрес",city:"Город",region:"Регион",operator:"Оператор",birth_date:"Дата рождения",birthday:"Дата рождения",dob:"Дата рождения",bdate:"Дата рождения",bday:"Дата рождения",inn:"ИНН",snils:"СНИЛС",passport:"Паспорт",data:"База",database:"База",comments:"Комментарий",_from:"Источник"};
   return map[key] || String(key).replaceAll("_"," ").replace(/\b\w/g, m => m.toUpperCase());
 }
 function isPlainObject(v){ return v !== null && typeof v === "object" && !Array.isArray(v); }
@@ -168,17 +146,16 @@ function buildTopCard(data){
   const email = pick(first || {}, ["email"]);
   const city = phoneInfo.region || pick(first || {}, ["city","address"]);
   const born = pick(first || {}, ["birth_date","birthday","dob","bdate","bday"]);
-  const operator = phoneInfo.operator || pick(first || {}, ["operator"]);
   let chips = "";
-  [phone, email, born, operator].filter(Boolean).forEach(v => { chips += `<span class="chip">${escapeHtml(v)}</span>`; });
+  [phone, email, born].filter(Boolean).forEach(v => { chips += `<span class="chip">${escapeHtml(v)}</span>`; });
   return `<div class="top-card"><div class="top-name">${escapeHtml(name)}</div><div class="top-sub">${escapeHtml(city || "Результаты поиска")}</div><div class="chips">${chips}</div></div>`;
 }
 
 function renderObjectCard(obj, index){
-  const visibleKeys = ["full_name","fio","surname","name","patronymic","phone","phone2","phone3","email","address","city","region","birth_date","birthday","dob","bdate","bday","inn","snils","passport","comments","operator","data","database"];
+  const visibleKeys = ["full_name","fio","surname","name","patronymic","phone","phone2","phone3","email","address","city","region","birth_date","birthday","dob","bdate","bday","inn","snils","passport","comments","operator","data","database","_from"];
   const keys = Object.keys(obj).filter(k => visibleKeys.includes(k));
   const targetKeys = keys.length ? keys : Object.keys(obj).slice(0, 8);
-  const fields = targetKeys.map(k => `<div class="field"><div class="label">${escapeHtml(prettyLabel(k))}</div>${(k === "database" || k === "data") ? `<div class="value"><span class="badge">${escapeHtml(String(obj[k]))}</span></div>` : prettyValue(obj[k])}</div>`).join("");
+  const fields = targetKeys.map(k => `<div class="field"><div class="label">${escapeHtml(prettyLabel(k))}</div>${(k === "database" || k === "data" || k === "_from") ? `<div class="value"><span class="badge">${escapeHtml(String(obj[k]))}</span></div>` : prettyValue(obj[k])}</div>`).join("");
   return `<div class="result-card"><div class="result-title">Запись ${index + 1}</div>${fields}</div>`;
 }
 
